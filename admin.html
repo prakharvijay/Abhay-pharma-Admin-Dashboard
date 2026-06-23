@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abhay Pharma | Admin Console</title>
+  <meta name="robots" content="noindex, nofollow">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="products.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #0d9488; --primary-hover: #0f766e; --primary-light: #ccfbf1;
+      --secondary: #10b981; --accent: #f59e0b;
+      --danger: #ef4444; --danger-light: #fee2e2;
+      --success: #22c55e; --success-light: #dcfce7;
+      --warning: #f59e0b; --warning-light: #fef3c7;
+      --sidebar-bg: #0f172a; --sidebar-hover: rgba(13,148,136,0.15);
+      --sidebar-active: rgba(13,148,136,0.25); --sidebar-text: rgba(255,255,255,0.65);
+      --bg: #f8fafc; --bg-card: #ffffff; --text: #0f172a; --text-muted: #94a3b8;
+      --border: #e2e8f0; --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+      --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+    /* LOGIN PAGE */
+    #login-page {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0a1628 0%, #0d2440 35%, #0d3b3b 70%, #051a1a 100%);
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+      position: relative; overflow: hidden;
+    }
+    .login-orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.2; animation: orbFloat 8s ease-in-out infinite; }
+    .login-orb-1 { width:420px; height:420px; background:radial-gradient(circle,#0d9488,transparent); top:-100px; left:-100px; }
+    .login-orb-2 { width:320px; height:320px; background:radial-gradient(circle,#10b981,transparent); bottom:-80px; right:-60px; animation-delay:3s; }
+    .login-orb-3 { width:260px; height:260px; background:radial-gradient(circle,#0f766e,transparent); top:40%; left:55%; animation-delay:5s; }
+    @keyframes orbFloat { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-28px) scale(1.04)} }
+    .login-card {
+      background: rgba(255,255,255,0.05); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+      border: 1px solid rgba(255,255,255,0.12); border-radius: 24px; padding: 52px 48px;
+      width: 100%; max-width: 460px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(13,148,136,0.15);
+      position: relative; z-index: 10; animation: cardIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes cardIn { from{opacity:0;transform:translateY(28px) scale(0.95)} to{opacity:1;transform:translateY(0) scale(1)} }
+    .login-brand { display:flex; align-items:center; gap:16px; margin-bottom:6px; }
+    .login-brand-icon {
+      width:58px; height:58px; background:linear-gradient(135deg,#0d9488,#10b981);
+      border-radius:16px; display:flex; align-items:center; justify-content:center;
+      color:#fff; box-shadow:0 8px 24px rgba(13,148,136,0.4); flex-shrink:0;
+    }
+    .login-brand-icon svg { width:28px; height:28px; }
+    .login-brand h1 { font-size:1.65rem; font-weight:800; color:#fff; line-height:1.1; font-family:'Outfit',sans-serif; }
+    .login-brand span { font-size:0.75rem; font-weight:700; color:#0d9488; letter-spacing:0.1em; text-transform:uppercase; }
+    .login-subtitle { font-size:0.85rem; color:rgba(255,255,255,0.42); margin:10px 0 30px; }
+    .login-error {
+      display:none; align-items:center; gap:8px;
+      background:rgba(239,68,68,0.13); border:1px solid rgba(239,68,68,0.3);
+      border-radius:10px; padding:10px 14px; margin-bottom:20px;
+      color:#fca5a5; font-size:0.85rem; animation:shake 0.4s ease;
+    }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
+    .login-field { margin-bottom:20px; }
+    .login-field label { display:flex; align-items:center; gap:6px; font-size:0.75rem; font-weight:700; color:rgba(255,255,255,0.55); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:8px; }
+    .login-field input { width:100%; padding:13px 16px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.13); border-radius:12px; color:#fff; font-size:0.95rem; font-family:inherit; outline:none; transition:all 0.2s; }
+    .login-field input::placeholder { color:rgba(255,255,255,0.26); }
+    .login-field input:focus { border-color:#0d9488; background:rgba(13,148,136,0.1); box-shadow:0 0 0 3px rgba(13,148,136,0.18); }
+    .pw-wrap { position:relative; }
+    .pw-wrap input { padding-right:48px; }
+    .pw-eye { position:absolute; right:14px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:rgba(255,255,255,0.38); padding:4px; display:flex; align-items:center; transition:color 0.2s; }
+    .pw-eye:hover { color:#0d9488; }
+    .pw-eye svg { width:17px; height:17px; }
+    .login-btn { width:100%; padding:14px; background:linear-gradient(135deg,#0d9488,#10b981); border:none; border-radius:12px; color:#fff; font-size:0.95rem; font-weight:700; font-family:inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:6px; transition:all 0.25s; box-shadow:0 6px 20px rgba(13,148,136,0.35); }
+    .login-btn:hover { background:linear-gradient(135deg,#0f766e,#059669); transform:translateY(-1px); box-shadow:0 10px 28px rgba(13,148,136,0.45); }
+    .login-btn:active { transform:translateY(0); }
+    .login-btn.loading { opacity:0.65; pointer-events:none; }
+    .login-btn svg { width:18px; height:18px; }
+    .login-hint { margin-top:22px; padding:12px 14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:10px; font-size:0.75rem; color:rgba(255,255,255,0.33); display:flex; align-items:flex-start; gap:7px; line-height:1.55; }
+    .login-hint svg { flex-shrink:0; margin-top:2px; }
+    .back-to-store { text-align:center; margin-top:20px; }
+    .back-to-store a { display:inline-flex; align-items:center; gap:5px; color:rgba(255,255,255,0.35); font-size:0.82rem; text-decoration:none; transition:color 0.2s; }
+    .back-to-store a:hover { color:#0d9488; }
+
+    /* ADMIN PORTAL */
+    #admin-portal { display:none; min-height:100vh; }
+    .admin-topbar { height:60px; background:#fff; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 28px; position:sticky; top:0; z-index:100; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
+    .admin-topbar-left { display:flex; align-items:center; gap:14px; }
+    .admin-logo { display:flex; align-items:center; gap:10px; font-family:'Outfit',sans-serif; font-size:1.2rem; font-weight:800; color:var(--primary); text-decoration:none; }
+    .admin-logo-icon { width:34px; height:34px; background:linear-gradient(135deg,#0d9488,#10b981); border-radius:9px; display:flex; align-items:center; justify-content:center; color:#fff; }
+    .admin-logo-icon svg { width:18px; height:18px; }
+    .admin-logo-text { line-height:1; }
+    .admin-logo-text small { display:block; font-size:0.62rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; margin-top:1px; }
+    .topbar-divider { width:1px; height:26px; background:var(--border); }
+    .admin-badge { display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg,#0d9488,#10b981); color:#fff; font-size:0.68rem; font-weight:700; padding:3px 10px; border-radius:20px; letter-spacing:0.05em; text-transform:uppercase; }
+    .admin-badge svg { width:11px; height:11px; }
+    .topbar-right { display:flex; align-items:center; gap:12px; }
+    #session-info { font-size:0.82rem; color:var(--text-muted); }
+    #session-info strong { color:var(--text); }
+    .btn-logout { display:flex; align-items:center; gap:7px; padding:8px 16px; background:none; border:1px solid var(--danger); border-radius:9px; color:var(--danger); font-size:0.83rem; font-weight:600; font-family:inherit; cursor:pointer; transition:all 0.2s; }
+    .btn-logout:hover { background:var(--danger); color:#fff; }
+    .btn-logout svg { width:15px; height:15px; }
+    .admin-layout { display:flex; min-height:calc(100vh - 60px); }
+    .admin-sidebar { width:240px; flex-shrink:0; background:var(--sidebar-bg); padding:24px 0; display:flex; flex-direction:column; position:sticky; top:60px; height:calc(100vh - 60px); overflow-y:auto; }
+    .sidebar-section-label { font-size:0.65rem; font-weight:700; color:rgba(255,255,255,0.28); letter-spacing:0.1em; text-transform:uppercase; padding:12px 20px 6px; margin-top:8px; }
+    .sidebar-link { display:flex; align-items:center; gap:11px; padding:11px 20px; margin:0 10px; border-radius:9px; color:var(--sidebar-text); font-size:0.88rem; font-weight:500; cursor:pointer; transition:all 0.18s; border:none; background:none; text-align:left; width:calc(100% - 20px); text-decoration:none; }
+    .sidebar-link svg { width:17px; height:17px; flex-shrink:0; opacity:0.75; }
+    .sidebar-link:hover { background:var(--sidebar-hover); color:#fff; }
+    .sidebar-link:hover svg { opacity:1; }
+    .sidebar-link.active { background:var(--sidebar-active); color:#fff; border-left:3px solid var(--primary); padding-left:17px; }
+    .sidebar-link.active svg { opacity:1; color:var(--primary); }
+    .admin-main { flex:1; padding:28px 32px; overflow-x:auto; background:var(--bg); }
+    .page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; }
+    .page-header h2 { font-size:1.5rem; font-weight:800; font-family:'Outfit',sans-serif; display:flex; align-items:center; gap:9px; }
+    .page-header h2 svg { color:var(--primary); width:24px; height:24px; }
+    .page-subtitle { font-size:0.82rem; color:var(--text-muted); margin-top:3px; }
+    .panel { display:none; }
+    .panel.active { display:block; animation:fadeIn 0.25s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+    .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:28px; }
+    .stat-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px 22px; box-shadow:var(--shadow); transition:box-shadow 0.2s; }
+    .stat-card:hover { box-shadow:var(--shadow-lg); }
+    .stat-card-label { font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; }
+    .stat-card-value { font-size:2rem; font-weight:800; font-family:'Outfit',sans-serif; color:var(--text); margin:6px 0 4px; }
+    .stat-card-value.green { color:var(--secondary); }
+    .stat-card-value.red { color:var(--danger); }
+    .stat-card-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:14px; }
+    .stat-card-icon svg { width:20px; height:20px; }
+    .stat-card-icon.teal { background:var(--primary-light); color:var(--primary); }
+    .stat-card-icon.green { background:var(--success-light); color:var(--success); }
+    .stat-card-icon.amber { background:var(--warning-light); color:var(--warning); }
+    .stat-card-icon.red { background:var(--danger-light); color:var(--danger); }
+    .card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; margin-bottom:24px; }
+    .card-header { padding:16px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .card-title { font-size:0.95rem; font-weight:700; display:flex; align-items:center; gap:8px; }
+    .card-title svg { width:16px; height:16px; color:var(--primary); }
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+    th { text-align:left; padding:10px 16px; font-size:0.73rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; background:#f8fafc; border-bottom:1px solid var(--border); }
+    td { padding:12px 16px; border-bottom:1px solid var(--border); vertical-align:middle; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover td { background:#fafbfc; }
+    .badge { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:20px; font-size:0.72rem; font-weight:700; }
+    .badge-success { background:var(--success-light); color:#166534; }
+    .badge-danger  { background:var(--danger-light);  color:#991b1b; }
+    .badge-warning { background:var(--warning-light); color:#92400e; }
+    .badge-info    { background:var(--primary-light);  color:#115e59; }
+    .btn { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:8px; font-size:0.83rem; font-weight:600; font-family:inherit; cursor:pointer; transition:all 0.18s; border:none; }
+    .btn-primary { background:var(--primary); color:#fff; }
+    .btn-primary:hover { background:var(--primary-hover); }
+    .btn-outline { background:none; border:1px solid var(--border); color:var(--text); }
+    .btn-outline:hover { border-color:var(--primary); color:var(--primary); background:var(--primary-light); }
+    .btn-sm { padding:5px 10px; font-size:0.77rem; border-radius:6px; }
+    .btn-danger { background:none; border:1px solid var(--border); color:var(--danger); }
+    .btn-danger:hover { background:var(--danger); color:#fff; border-color:var(--danger); }
+    .btn svg { width:15px; height:15px; }
+    .status-select { padding:5px 8px; border:1px solid var(--border); border-radius:7px; font-size:0.8rem; font-family:inherit; background:var(--bg); cursor:pointer; outline:none; }
+    .status-select:focus { border-color:var(--primary); }
+    .toast-container { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:10px; }
+    .toast { display:flex; align-items:center; gap:10px; padding:12px 18px; border-radius:10px; min-width:280px; max-width:380px; font-size:0.86rem; font-weight:500; color:#fff; box-shadow:0 8px 24px rgba(0,0,0,0.18); animation:toastIn 0.3s ease; }
+    @keyframes toastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+    .toast svg { width:18px; height:18px; flex-shrink:0; }
+    .toast-success { background:linear-gradient(135deg,#059669,#10b981); }
+    .toast-danger  { background:linear-gradient(135deg,#dc2626,#ef4444); }
+    .toast-warning { background:linear-gradient(135deg,#d97706,#f59e0b); }
+    .toast-info    { background:linear-gradient(135deg,#0d9488,#14b8a6); }
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:500; display:none; align-items:center; justify-content:center; padding:24px; }
+    .modal-overlay.active { display:flex; }
+    .modal-box { background:#fff; border-radius:16px; width:100%; max-width:620px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 60px rgba(0,0,0,0.25); animation:cardIn 0.3s ease; }
+    .modal-header { padding:20px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:#fff; z-index:1; }
+    .modal-header h3 { font-size:1.05rem; font-weight:700; }
+    .modal-close { background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:1.4rem; line-height:1; padding:2px 8px; border-radius:6px; }
+    .modal-close:hover { background:#f1f5f9; color:var(--text); }
+    .modal-body { padding:24px; }
+    .form-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:0; }
+    .form-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:0; }
+    .form-group { margin-bottom:16px; }
+    .form-label { display:block; font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px; }
+    .form-control { width:100%; padding:10px 13px; border:1px solid var(--border); border-radius:9px; font-size:0.9rem; font-family:inherit; background:#fff; outline:none; transition:all 0.18s; }
+    .form-control:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(13,148,136,0.12); }
+    textarea.form-control { resize:vertical; min-height:80px; }
+    .prod-img-preview { width:64px; height:64px; border-radius:8px; object-fit:cover; border:1px solid var(--border); display:none; margin-top:8px; }
+    @media (max-width:900px) { .stats-grid{grid-template-columns:1fr 1fr} .admin-sidebar{width:200px} .admin-main{padding:20px 16px} }
+    @media (max-width:640px) { .admin-sidebar{display:none} .stats-grid{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="login-page">
+  <div class="login-orb login-orb-1"></div>
+  <div class="login-orb login-orb-2"></div>
+  <div class="login-orb login-orb-3"></div>
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-brand-icon"><i data-lucide="shield-check"></i></div>
+      <div><h1>Abhay Pharma</h1><span>Admin Console</span></div>
+    </div>
+    <p class="login-subtitle">Restricted access &mdash; authorised personnel only.</p>
+    <div class="login-error" id="login-error">
+      <i data-lucide="alert-triangle" style="width:15px;height:15px;flex-shrink:0;"></i>
+      <span id="login-error-text">Invalid credentials.</span>
+    </div>
+    <form id="login-form" onsubmit="return false;">
+      <div class="login-field">
+        <label><i data-lucide="mail" style="width:13px;height:13px;"></i> Email Address</label>
+        <input type="email" id="login-email" placeholder="admin@abhaypharma.com" autocomplete="username" required>
+      </div>
+      <div class="login-field">
+        <label><i data-lucide="lock" style="width:13px;height:13px;"></i> Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="login-password" placeholder="Enter your password" autocomplete="current-password" required>
+          <button type="button" class="pw-eye" id="pw-toggle"><i data-lucide="eye" id="pw-eye-icon"></i></button>
+        </div>
+      </div>
+      <button type="submit" class="login-btn" id="login-btn"><i data-lucide="log-in"></i> Sign In to Admin Console</button>
+    </form>
+    <div class="back-to-store">
+      <a href="index.html"><i data-lucide="arrow-left" style="width:13px;height:13px;"></i> Back to Public Store</a>
+    </div>
+    <div class="login-hint">
+      <i data-lucide="info" style="width:13px;height:13px;"></i>
+      Only authorised admin accounts can access this console. Regular customers use the public store.
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PORTAL -->
+<div id="admin-portal">
+  <nav class="admin-topbar">
+    <div class="admin-topbar-left">
+      <a href="admin.html" class="admin-logo">
+        <div class="admin-logo-icon"><i data-lucide="shield-check"></i></div>
+        <div class="admin-logo-text">AbhayPharma <small>Admin Console</small></div>
+      </a>
+      <div class="topbar-divider"></div>
+      <div class="admin-badge"><i data-lucide="shield-check"></i> <span id="session-role">Admin</span></div>
+    </div>
+    <div class="topbar-right">
+      <span id="session-info">Signed in as <strong id="session-name">—</strong></span>
+      <button class="btn-logout" id="logout-btn"><i data-lucide="log-out"></i> Logout</button>
+    </div>
+  </nav>
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="sidebar-section-label">Overview</div>
+      <button class="sidebar-link active" data-panel="panel-analytics"><i data-lucide="trending-up"></i> Analytics</button>
+      <div class="sidebar-section-label">Management</div>
+      <button class="sidebar-link" data-panel="panel-products"><i data-lucide="package"></i> Inventory &amp; Products</button>
+      <button class="sidebar-link" data-panel="panel-orders"><i data-lucide="file-check-2"></i> Orders &amp; Prescriptions</button>
+      <button class="sidebar-link" data-panel="panel-customers"><i data-lucide="users"></i> Customers</button>
+      <div style="flex:1;"></div>
+      <a href="index.html" class="sidebar-link" style="color:rgba(255,255,255,0.35); margin-bottom:8px;"><i data-lucide="store"></i> View Public Store</a>
+    </aside>
+    <main class="admin-main">
+
+      <!-- ANALYTICS -->
+      <div class="panel active" id="panel-analytics">
+        <div class="page-header">
+          <div><h2><i data-lucide="trending-up"></i> Analytics Dashboard</h2><p class="page-subtitle">Live overview of store performance</p></div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-card-icon teal"><i data-lucide="indian-rupee"></i></div><div class="stat-card-label">Total Revenue</div><div class="stat-card-value green" id="stat-revenue">—</div></div>
+          <div class="stat-card"><div class="stat-card-icon green"><i data-lucide="shopping-bag"></i></div><div class="stat-card-label">Total Orders</div><div class="stat-card-value" id="stat-orders">—</div></div>
+          <div class="stat-card"><div class="stat-card-icon amber"><i data-lucide="alert-circle"></i></div><div class="stat-card-label">Low Stock Items</div><div class="stat-card-value" id="stat-lowstock">—</div></div>
+          <div class="stat-card"><div class="stat-card-icon teal"><i data-lucide="package-check"></i></div><div class="stat-card-label">Total Products</div><div class="stat-card-value" id="stat-products">—</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i data-lucide="file-check-2"></i> Recent Orders</div></div>
+          <div class="table-wrap"><table><thead><tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Payment</th><th>Date</th><th>Status</th></tr></thead><tbody id="analytics-orders-tbody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- PRODUCTS -->
+      <div class="panel" id="panel-products">
+        <div class="page-header">
+          <div><h2><i data-lucide="package"></i> Inventory &amp; Products</h2><p class="page-subtitle">Manage your complete product catalogue</p></div>
+          <button class="btn btn-primary" id="add-product-btn"><i data-lucide="plus"></i> Add Product</button>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i data-lucide="list"></i> All Products</div>
+            <input type="text" id="product-search" placeholder="Search products..." style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:0.83rem;width:220px;outline:none;">
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Discount</th><th>Stock</th><th>Type</th><th>Actions</th></tr></thead><tbody id="products-tbody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- ORDERS -->
+      <div class="panel" id="panel-orders">
+        <div class="page-header">
+          <div><h2><i data-lucide="file-check-2"></i> Orders &amp; Prescriptions</h2><p class="page-subtitle">Review and manage all customer orders</p></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i data-lucide="clipboard-list"></i> All Orders</div></div>
+          <div class="table-wrap"><table><thead><tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Payment</th><th>Date</th><th>Prescription</th><th>Status</th><th>Actions</th></tr></thead><tbody id="orders-tbody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- CUSTOMERS -->
+      <div class="panel" id="panel-customers">
+        <div class="page-header">
+          <div><h2><i data-lucide="users"></i> Customers</h2><p class="page-subtitle">Registered customers and order history</p></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i data-lucide="users"></i> Customer List</div></div>
+          <div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Addresses</th><th>Total Orders</th></tr></thead><tbody id="customers-tbody"></tbody></table></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Product Modal -->
+<div class="modal-overlay" id="product-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="product-modal-title">Add New Product</h3>
+      <button class="modal-close" id="product-modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="pm-id">
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Product Name</label><input type="text" class="form-control" id="pm-name" placeholder="e.g. Dolo 650 Tablet"></div>
+        <div class="form-group"><label class="form-label">Brand</label><input type="text" class="form-control" id="pm-brand" placeholder="e.g. Micro Labs"></div>
+      </div>
+      <div class="form-grid-3">
+        <div class="form-group"><label class="form-label">Price (Rs.)</label><input type="number" class="form-control" id="pm-price" step="0.01" min="0"></div>
+        <div class="form-group"><label class="form-label">Discount (%)</label><input type="number" class="form-control" id="pm-discount" value="0" min="0" max="100"></div>
+        <div class="form-group"><label class="form-label">Stock Qty</label><input type="number" class="form-control" id="pm-stock" value="100" min="0"></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-control" id="pm-category">
+            <option value="Prescription Medicines">Prescription Medicines</option>
+            <option value="OTC Medicines">OTC Medicines</option>
+            <option value="Diabetes Care">Diabetes Care</option>
+            <option value="Health Supplements">Health Supplements</option>
+            <option value="Baby Care">Baby Care</option>
+            <option value="Personal Care">Personal Care</option>
+            <option value="Medical Devices">Medical Devices</option>
+            <option value="Ayurvedic Products">Ayurvedic Products</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Prescription Required</label>
+          <select class="form-control" id="pm-rx">
+            <option value="false">No (OTC)</option>
+            <option value="true">Yes (Rx Required)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Product Image URL</label>
+        <input type="text" class="form-control" id="pm-image" placeholder="Paste image URL here" oninput="previewProductImage()">
+        <img id="pm-img-preview" class="prod-img-preview" alt="Preview">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" id="pm-desc" placeholder="Brief product description..."></textarea>
+      </div>
+      <button class="btn btn-primary" id="save-product-btn" style="width:100%;padding:13px;font-size:0.93rem;justify-content:center;">
+        <i data-lucide="save"></i> Save &amp; Publish Product
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ADMIN_USERS = [
+  { email: "admin@abhaypharma.com",      password: "Admin@1234",  role: "Super Admin", name: "Abhay Sharma" },
+  { email: "pharmacist@abhaypharma.com", password: "Pharma@2024", role: "Pharmacist",  name: "Dr. Clara Vance" }
+];
+let currentAdmin = null;
+
+function loadData() {
+  const products      = JSON.parse(localStorage.getItem("abhay_products") || "null") || PRODUCTS;
+  const orders        = JSON.parse(localStorage.getItem("abhay_orders") || "[]");
+  const prescriptions = JSON.parse(localStorage.getItem("abhay_prescriptions") || "[]");
+  const profile       = JSON.parse(localStorage.getItem("abhay_profile") || "null") || {};
+  return { products, orders, prescriptions, profile };
+}
+function saveProducts(p)      { localStorage.setItem("abhay_products", JSON.stringify(p)); }
+function saveOrders(o)        { localStorage.setItem("abhay_orders", JSON.stringify(o)); }
+function savePrescriptions(p) { localStorage.setItem("abhay_prescriptions", JSON.stringify(p)); }
+
+function showToast(msg, type) {
+  type = type || "info";
+  const icons = { success:"check-circle-2", danger:"alert-triangle", warning:"alert-circle", info:"info" };
+  const el = document.createElement("div");
+  el.className = "toast toast-" + type;
+  el.innerHTML = '<i data-lucide="' + (icons[type]||"info") + '"></i> ' + msg;
+  document.getElementById("toast-container").appendChild(el);
+  lucide.createIcons();
+  setTimeout(function() { el.style.opacity="0"; el.style.transform="translateX(20px)"; el.style.transition="all 0.4s"; setTimeout(function(){el.remove()},400); }, 3500);
+}
+
+function triggerShake(el) { el.style.animation="none"; el.offsetHeight; el.style.animation="shake 0.4s ease"; }
+
+function doLogin() {
+  var email    = (document.getElementById("login-email").value||"").trim().toLowerCase();
+  var password = (document.getElementById("login-password").value||"").trim();
+  var errBox   = document.getElementById("login-error");
+  var errText  = document.getElementById("login-error-text");
+  var btn      = document.getElementById("login-btn");
+  if (!email || !password) { errText.textContent="Please enter your email and password."; errBox.style.display="flex"; triggerShake(errBox); return; }
+  btn.classList.add("loading");
+  setTimeout(function() {
+    var admin = ADMIN_USERS.find(function(u){ return u.email.toLowerCase()===email && u.password===password; });
+    btn.classList.remove("loading");
+    if (admin) {
+      currentAdmin = admin;
+      errBox.style.display = "none";
+      document.getElementById("login-page").style.display = "none";
+      document.getElementById("admin-portal").style.display = "block";
+      document.getElementById("session-name").textContent = admin.name;
+      document.getElementById("session-role").textContent = admin.role;
+      document.title = "Admin Console | " + admin.name;
+      renderPanel("panel-analytics");
+      lucide.createIcons();
+      showToast("Welcome back, " + admin.name + "! Logged in as " + admin.role + ".", "success");
+    } else {
+      errText.textContent = "Incorrect email or password. Please try again.";
+      errBox.style.display = "flex"; triggerShake(errBox);
+      document.getElementById("login-password").value = "";
+      document.getElementById("login-password").focus();
+    }
+  }, 550);
+}
+
+function doLogout() {
+  if (!confirm("Are you sure you want to log out?")) return;
+  currentAdmin = null;
+  document.getElementById("admin-portal").style.display = "none";
+  document.getElementById("login-page").style.display = "flex";
+  document.getElementById("login-email").value = "";
+  document.getElementById("login-password").value = "";
+  document.getElementById("login-error").style.display = "none";
+  document.title = "Abhay Pharma | Admin Console";
+  lucide.createIcons();
+}
+
+function renderPanel(panelId) {
+  if (panelId === "panel-analytics") renderAnalytics();
+  if (panelId === "panel-products")  renderProductsTable();
+  if (panelId === "panel-orders")    renderOrdersTable();
+  if (panelId === "panel-customers") renderCustomersTable();
+  lucide.createIcons();
+}
+
+function renderAnalytics() {
+  var d = loadData();
+  var revenue = d.orders.filter(function(o){return o.status!=="Cancelled"&&!o.status.includes("Rejected")}).reduce(function(s,o){return s+(o.total||0)},0);
+  var lowStock = d.products.filter(function(p){return p.stock<50}).length;
+  document.getElementById("stat-revenue").textContent  = "Rs." + revenue.toFixed(2);
+  document.getElementById("stat-orders").textContent   = d.orders.length;
+  document.getElementById("stat-products").textContent = d.products.length;
+  var ls = document.getElementById("stat-lowstock");
+  ls.textContent = lowStock; ls.className = "stat-card-value " + (lowStock>0?"red":"");
+  var tbody = document.getElementById("analytics-orders-tbody");
+  tbody.innerHTML = "";
+  d.orders.slice(0,8).forEach(function(o) {
+    var sc = o.status==="Delivered"?"badge-success":o.status==="Shipped"?"badge-info":o.status.includes("Cancel")?"badge-danger":"badge-warning";
+    tbody.innerHTML += "<tr><td style='font-weight:700;'>"+o.id+"</td><td>"+(o.address&&o.address.fullname||"—")+"</td><td style='font-weight:700;color:var(--primary);'>Rs."+(o.total||0).toFixed(2)+"</td><td>"+(o.paymentMethod||"—")+"</td><td>"+(o.date||"—")+"</td><td><span class='badge "+sc+"'>"+o.status+"</span></td></tr>";
+  });
+  if (!d.orders.length) tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;color:var(--text-muted);padding:24px;'>No orders yet.</td></tr>";
+}
+
+function renderProductsTable() {
+  var d = loadData();
+  var query = (document.getElementById("product-search")||{}).value||"";
+  query = query.toLowerCase().trim();
+  var list = query ? d.products.filter(function(p){return p.name.toLowerCase().includes(query)||p.brand.toLowerCase().includes(query)||p.category.toLowerCase().includes(query)}) : d.products;
+  var tbody = document.getElementById("products-tbody");
+  tbody.innerHTML = "";
+  list.forEach(function(p) {
+    var sc = p.stock===0?"var(--text-muted)":p.stock<50?"var(--danger)":"inherit";
+    tbody.innerHTML += "<tr>"
+      + "<td style='display:flex;align-items:center;gap:10px;'>"
+      + "<img src='"+p.image+"' style='width:38px;height:38px;border-radius:8px;object-fit:cover;border:1px solid var(--border);' onerror=\"this.src='https://via.placeholder.com/38'\">"
+      + "<div><div style='font-weight:700;font-size:0.85rem;'>"+p.name+"</div><div style='font-size:0.72rem;color:var(--text-muted);'>"+p.brand+"</div></div></td>"
+      + "<td>"+p.category+"</td>"
+      + "<td style='font-weight:700;'>Rs."+p.price.toFixed(2)+"</td>"
+      + "<td>"+(p.discount||0)+"%</td>"
+      + "<td style='font-weight:700;color:"+sc+";'>"+p.stock+" units</td>"
+      + "<td>"+(p.prescriptionRequired?"<span class='badge badge-danger'>Rx Required</span>":"<span class='badge badge-success'>OTC</span>")+"</td>"
+      + "<td><div style='display:flex;gap:6px;'>"
+      + "<button class='btn btn-outline btn-sm' onclick=\"openProductModal('"+p.id+"')\"><i data-lucide='pencil'></i> Edit</button>"
+      + "<button class='btn btn-danger btn-sm' onclick=\"deleteProduct('"+p.id+"')\"><i data-lucide='trash-2'></i></button>"
+      + "</div></td></tr>";
+  });
+  if (!list.length) tbody.innerHTML = "<tr><td colspan='7' style='text-align:center;color:var(--text-muted);padding:24px;'>"+(query?"No products match your search.":"No products found.")+"</td></tr>";
+  lucide.createIcons();
+}
+
+function renderOrdersTable() {
+  var d = loadData();
+  var tbody = document.getElementById("orders-tbody");
+  tbody.innerHTML = "";
+  d.orders.forEach(function(o) {
+    var rxHTML = "<span class='badge badge-success'>OTC Order</span>";
+    if (o.prescriptionUrl) {
+      var pres = d.prescriptions.find(function(r){return r.orderId===o.id});
+      if (pres&&pres.status==="Approved")               rxHTML = "<span class='badge badge-success'>Rx Approved</span>";
+      else if (pres&&pres.status&&pres.status.includes("Rejected")) rxHTML = "<span class='badge badge-danger'>Rx Rejected</span>";
+      else                                              rxHTML = "<button class='btn btn-outline btn-sm' onclick=\"verifyRx('"+o.id+"')\"><i data-lucide='shield-alert'></i> Verify Rx</button>";
+    }
+    var sc = o.status==="Delivered"?"badge-success":o.status==="Shipped"?"badge-info":o.status.includes("Cancel")?"badge-danger":"badge-warning";
+    tbody.innerHTML += "<tr>"
+      + "<td style='font-weight:700;'>"+o.id+"</td>"
+      + "<td><div style='font-weight:600;font-size:0.85rem;'>"+(o.address&&o.address.fullname||"—")+"</div><div style='font-size:0.72rem;color:var(--text-muted);'>"+(o.address&&o.address.phone||"")+"</div></td>"
+      + "<td style='font-weight:700;color:var(--primary);'>Rs."+(o.total||0).toFixed(2)+"</td>"
+      + "<td>"+(o.paymentMethod||"—")+"</td>"
+      + "<td>"+(o.date||"—")+"</td>"
+      + "<td>"+rxHTML+"</td>"
+      + "<td><select class='status-select' onchange=\"updateOrderStatus('"+o.id+"',this.value)\">"
+      + "<option value='Verification Pending'"+(o.status==="Verification Pending"?" selected":"")+" >Pending Verify</option>"
+      + "<option value='Processing'"+(o.status==="Processing"?" selected":"")+" >Processing</option>"
+      + "<option value='Shipped'"+(o.status==="Shipped"?" selected":"")+" >Shipped</option>"
+      + "<option value='Delivered'"+(o.status==="Delivered"?" selected":"")+" >Delivered</option>"
+      + "<option value='Cancelled'"+(o.status==="Cancelled"?" selected":"")+" >Cancelled</option>"
+      + "</select></td>"
+      + "<td><button class='btn btn-outline btn-sm' onclick=\"viewOrderItems('"+o.id+"')\"><i data-lucide='eye'></i> Items</button></td>"
+      + "</tr>";
+  });
+  if (!d.orders.length) tbody.innerHTML = "<tr><td colspan='8' style='text-align:center;color:var(--text-muted);padding:24px;'>No orders placed yet.</td></tr>";
+  lucide.createIcons();
+}
+
+function updateOrderStatus(orderId, status) {
+  var d = loadData(); var o = d.orders.find(function(x){return x.id===orderId}); if (!o) return;
+  o.status = status;
+  var steps = {"Verification Pending":1,"Processing":2,"Shipped":3,"Delivered":4,"Cancelled":1};
+  o.trackingStep = steps[status]||1;
+  saveOrders(d.orders);
+  showToast("Order "+orderId+' updated to "'+status+'".', "success");
+  renderOrdersTable(); lucide.createIcons();
+}
+
+function verifyRx(orderId) {
+  var d = loadData(); var o = d.orders.find(function(x){return x.id===orderId}); if (!o) return;
+  var action = confirm("Prescription Verification\n\nOrder: "+orderId+"\nDocument: "+o.prescriptionUrl+"\n\nClick OK to APPROVE or Cancel to REJECT.");
+  var pres = d.prescriptions.find(function(r){return r.orderId===orderId});
+  if (pres) {
+    pres.status = action?"Approved":"Rejected";
+    if (action){o.status="Processing";o.trackingStep=2;} else {o.status="Cancelled (Rx Rejected)";o.trackingStep=1;}
+    saveOrders(d.orders); savePrescriptions(d.prescriptions);
+    showToast(action?"Prescription approved. Order moved to Processing.":"Prescription rejected. Order cancelled.", action?"success":"warning");
+    renderOrdersTable(); lucide.createIcons();
+  }
+}
+
+function viewOrderItems(orderId) {
+  var d = loadData(); var o = d.orders.find(function(x){return x.id===orderId}); if (!o) return;
+  var lines = o.items.map(function(i){return "  - "+i.product.name+" x"+i.quantity+" = Rs."+(i.product.price*i.quantity).toFixed(2)}).join("\n");
+  alert("Order "+orderId+"\n"+"─".repeat(36)+"\n"+lines+"\n"+"─".repeat(36)+"\nTotal Paid: Rs."+(o.total||0).toFixed(2));
+}
+
+function renderCustomersTable() {
+  var d = loadData(); var tbody = document.getElementById("customers-tbody"); tbody.innerHTML = "";
+  var users = [
+    {name:(d.profile.firstname||"John")+" "+(d.profile.lastname||"Smith"), email:d.profile.email||"john@gmail.com", phone:d.profile.phone||"+91 98765 43210", addresses:(d.profile.addresses||[]).length, orders:d.orders.length},
+    {name:"Sarah Jenkins",  email:"sarah.j@gmail.com",   phone:"+91 99001 23456", addresses:1, orders:1},
+    {name:"Robert Taylor",  email:"rtaylor@outlook.com", phone:"+91 87654 32109", addresses:2, orders:1}
+  ];
+  users.forEach(function(u){tbody.innerHTML+="<tr><td style='font-weight:700;'>"+u.name+"</td><td>"+u.email+"</td><td>"+u.phone+"</td><td>"+u.addresses+" saved</td><td style='font-weight:700;color:var(--primary);'>"+u.orders+" orders</td></tr>";});
+}
+
+function openProductModal(productId) {
+  var modal = document.getElementById("product-modal");
+  var title = document.getElementById("product-modal-title");
+  var preview = document.getElementById("pm-img-preview");
+  preview.style.display = "none";
+  if (productId) {
+    var d = loadData(); var p = d.products.find(function(x){return x.id===productId}); if (!p) return;
+    title.textContent = "Edit Product Details";
+    document.getElementById("pm-id").value       = p.id;
+    document.getElementById("pm-name").value     = p.name;
+    document.getElementById("pm-brand").value    = p.brand;
+    document.getElementById("pm-price").value    = p.price;
+    document.getElementById("pm-discount").value = p.discount||0;
+    document.getElementById("pm-stock").value    = p.stock||0;
+    document.getElementById("pm-image").value    = p.image;
+    document.getElementById("pm-desc").value     = p.description;
+    var catSel = document.getElementById("pm-category");
+    for (var i=0;i<catSel.options.length;i++){if(catSel.options[i].value===p.category){catSel.selectedIndex=i;break;}}
+    document.getElementById("pm-rx").value = p.prescriptionRequired?"true":"false";
+    if (p.image){preview.src=p.image;preview.style.display="block";}
+  } else {
+    title.textContent = "Add New Product";
+    ["pm-id","pm-name","pm-brand","pm-price","pm-image","pm-desc"].forEach(function(id){document.getElementById(id).value="";});
+    document.getElementById("pm-discount").value=0; document.getElementById("pm-stock").value=100;
+    document.getElementById("pm-category").selectedIndex=0; document.getElementById("pm-rx").value="false";
+  }
+  modal.classList.add("active"); lucide.createIcons();
+}
+
+function previewProductImage() {
+  var url=document.getElementById("pm-image").value.trim(), prev=document.getElementById("pm-img-preview");
+  if(url){prev.src=url;prev.style.display="block";}else{prev.style.display="none";}
+}
+
+function saveProduct() {
+  var id=document.getElementById("pm-id").value, name=document.getElementById("pm-name").value.trim(), brand=document.getElementById("pm-brand").value.trim();
+  var price=parseFloat(document.getElementById("pm-price").value), discount=parseInt(document.getElementById("pm-discount").value)||0;
+  var stock=parseInt(document.getElementById("pm-stock").value)||0, category=document.getElementById("pm-category").value;
+  var rx=document.getElementById("pm-rx").value==="true", image=document.getElementById("pm-image").value.trim(), desc=document.getElementById("pm-desc").value.trim();
+  if (!name||!brand||isNaN(price)||price<0||!image||!desc){showToast("Please fill in all required fields correctly.","warning");return;}
+  var d=loadData();
+  if (id) {
+    var idx=d.products.findIndex(function(p){return p.id===id});
+    if(idx>-1) Object.assign(d.products[idx],{name:name,brand:brand,price:price,discount:discount,stock:stock,category:category,prescriptionRequired:rx,image:image,description:desc});
+    showToast('"'+name+'" updated successfully.',"success");
+  } else {
+    d.products.unshift({id:"p-"+Date.now(),name:name,brand:brand,price:price,discount:discount,rating:5.0,reviewsCount:0,description:desc,category:category,image:image,prescriptionRequired:rx,stock:stock});
+    showToast('"'+name+'" added to catalogue.',"success");
+  }
+  saveProducts(d.products);
+  document.getElementById("product-modal").classList.remove("active");
+  renderProductsTable(); lucide.createIcons();
+}
+
+function deleteProduct(id) {
+  if (!confirm("Permanently delete this product from the catalogue?")) return;
+  var d=loadData(), name=(d.products.find(function(p){return p.id===id})||{}).name||"Product";
+  saveProducts(d.products.filter(function(p){return p.id!==id}));
+  showToast('"'+name+'" deleted.',"danger");
+  renderProductsTable(); lucide.createIcons();
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  lucide.createIcons();
+  document.getElementById("login-form").addEventListener("submit", function(e){e.preventDefault();doLogin();});
+  document.getElementById("login-btn").addEventListener("click", doLogin);
+  document.getElementById("pw-toggle").addEventListener("click", function(){
+    var pw=document.getElementById("login-password"), icon=document.getElementById("pw-eye-icon");
+    if(pw.type==="password"){pw.type="text";icon.setAttribute("data-lucide","eye-off");}
+    else{pw.type="password";icon.setAttribute("data-lucide","eye");}
+    lucide.createIcons();
+  });
+  document.getElementById("logout-btn").addEventListener("click", doLogout);
+  document.querySelectorAll(".sidebar-link[data-panel]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.querySelectorAll(".sidebar-link[data-panel]").forEach(function(b){b.classList.remove("active");});
+      btn.classList.add("active");
+      var panelId=btn.getAttribute("data-panel");
+      document.querySelectorAll(".panel").forEach(function(p){p.classList.remove("active");});
+      document.getElementById(panelId).classList.add("active");
+      renderPanel(panelId);
+    });
+  });
+  document.getElementById("product-modal-close").addEventListener("click", function(){document.getElementById("product-modal").classList.remove("active");});
+  document.getElementById("product-modal").addEventListener("click", function(e){if(e.target===this)this.classList.remove("active");});
+  document.getElementById("add-product-btn").addEventListener("click", function(){openProductModal(null);});
+  document.getElementById("save-product-btn").addEventListener("click", saveProduct);
+  document.getElementById("product-search").addEventListener("input", function(){renderProductsTable();});
+});
+</script>
+</body>
+</html>
