@@ -536,9 +536,32 @@ function renderOrdersTable() {
 
 function updateOrderStatus(orderId, status) {
   var d = loadData(); var o = d.orders.find(function(x){return x.id===orderId}); if (!o) return;
+  var oldStatus = o.status;
   o.status = status;
   var steps = {"Verification Pending":1,"Processing":2,"Shipped":3,"Delivered":4,"Cancelled":1};
   o.trackingStep = steps[status]||1;
+
+  // Restore stock if status changed to Cancelled
+  if (status === "Cancelled" && oldStatus !== "Cancelled" && oldStatus !== "Cancelled (Rx Rejected)") {
+    o.items.forEach(function(item) {
+      var prod = d.products.find(function(p){return p.id === item.product.id});
+      if (prod) {
+        prod.stock = (prod.stock || 0) + item.quantity;
+      }
+    });
+    saveProducts(d.products);
+  }
+  // Re-deduct stock if changed FROM Cancelled to an active state
+  else if (status !== "Cancelled" && (oldStatus === "Cancelled" || oldStatus === "Cancelled (Rx Rejected)")) {
+    o.items.forEach(function(item) {
+      var prod = d.products.find(function(p){return p.id === item.product.id});
+      if (prod) {
+        prod.stock = Math.max(0, (prod.stock || 0) - item.quantity);
+      }
+    });
+    saveProducts(d.products);
+  }
+
   saveOrders(d.orders);
   showToast("Order "+orderId+' updated to "'+status+'".', "success");
   renderOrdersTable(); lucide.createIcons();
@@ -549,8 +572,33 @@ function verifyRx(orderId) {
   var action = confirm("Prescription Verification\n\nOrder: "+orderId+"\nDocument: "+o.prescriptionUrl+"\n\nClick OK to APPROVE or Cancel to REJECT.");
   var pres = d.prescriptions.find(function(r){return r.orderId===orderId});
   if (pres) {
+    var oldStatus = o.status;
     pres.status = action?"Approved":"Rejected";
-    if (action){o.status="Processing";o.trackingStep=2;} else {o.status="Cancelled (Rx Rejected)";o.trackingStep=1;}
+    if (action){
+      o.status="Processing";o.trackingStep=2;
+      // Re-deduct stock if it was cancelled/rejected before
+      if (oldStatus === "Cancelled" || oldStatus === "Cancelled (Rx Rejected)") {
+        o.items.forEach(function(item) {
+          var prod = d.products.find(function(p){return p.id === item.product.id});
+          if (prod) {
+            prod.stock = Math.max(0, (prod.stock || 0) - item.quantity);
+          }
+        });
+        saveProducts(d.products);
+      }
+    } else {
+      o.status="Cancelled (Rx Rejected)";o.trackingStep=1;
+      // Restore stock if it was active before
+      if (oldStatus !== "Cancelled" && oldStatus !== "Cancelled (Rx Rejected)") {
+        o.items.forEach(function(item) {
+          var prod = d.products.find(function(p){return p.id === item.product.id});
+          if (prod) {
+            prod.stock = (prod.stock || 0) + item.quantity;
+          }
+        });
+        saveProducts(d.products);
+      }
+    }
     saveOrders(d.orders); savePrescriptions(d.prescriptions);
     showToast(action?"Prescription approved. Order moved to Processing.":"Prescription rejected. Order cancelled.", action?"success":"warning");
     renderOrdersTable(); lucide.createIcons();
@@ -661,6 +709,17 @@ document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("add-product-btn").addEventListener("click", function(){openProductModal(null);});
   document.getElementById("save-product-btn").addEventListener("click", saveProduct);
   document.getElementById("product-search").addEventListener("input", function(){renderProductsTable();});
+});
+
+window.addEventListener('storage', function(e) {
+  var syncKeys = ["abhay_products", "abhay_orders", "abhay_prescriptions", "abhay_profile", "abhay_notifications"];
+  if (syncKeys.indexOf(e.key) > -1) {
+    var activeBtn = document.querySelector(".sidebar-link[data-panel].active");
+    if (activeBtn) {
+      var panelId = activeBtn.getAttribute("data-panel");
+      renderPanel(panelId);
+    }
+  }
 });
 </script>
 </body>

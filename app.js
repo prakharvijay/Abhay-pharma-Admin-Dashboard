@@ -1730,6 +1730,14 @@ function placeOrderCheckout() {
   };
   state.notifications.unshift(newNotif);
 
+  // Deduct stock from inventory
+  state.cart.forEach(item => {
+    const prod = state.products.find(p => p.id === item.product.id);
+    if (prod) {
+      prod.stock = Math.max(0, prod.stock - item.quantity);
+    }
+  });
+
   // Clear cart & variables
   state.cart = [];
   state.uploadedRxFiles = [];
@@ -3162,3 +3170,38 @@ function openQuickViewModal(product) {
   modal.classList.add("active");
   lucide.createIcons();
 }
+
+// ====================================================
+// 21. REAL-TIME STORAGE EVENT SYNC LISTENER
+// ====================================================
+window.addEventListener('storage', (e) => {
+  const syncKeys = ["abhay_products", "abhay_orders", "abhay_prescriptions", "abhay_profile", "abhay_notifications", "abhay_theme", "abhay_wishlist", "abhay_cart"];
+  if (syncKeys.includes(e.key)) {
+    loadLocalStorage();
+    updateHeaderCounters();
+    
+    // Re-render the active view
+    if (state.activeView === "home-view") {
+      renderHome();
+    } else if (state.activeView === "shop-view") {
+      renderShop();
+    } else if (state.activeView === "details-view") {
+      if (state.selectedProduct) {
+        const updatedProd = state.products.find(p => p.id === state.selectedProduct.id);
+        if (updatedProd) {
+          state.selectedProduct = updatedProd;
+          renderProductDetails(updatedProd);
+        }
+      }
+    } else if (state.activeView === "cart-view") {
+      renderCart();
+    } else if (state.activeView === "checkout-view") {
+      renderCheckout();
+    } else if (state.activeView === "dashboard-view") {
+      renderDashboard(state.activeDbTab);
+    } else if (state.activeView === "admin-view") {
+      updateAdminHeaderBadge();
+      renderAdmin(state.activeAdminPane);
+    }
+  }
+});
